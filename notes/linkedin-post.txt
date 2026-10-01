@@ -1,0 +1,35 @@
+LINKEDIN POST TEMPLATE  (add your own picture)
+======================
+
+I ran a language model on a €5 microcontroller. With no extra RAM. And trained it to be a dystopian sustainability cop. 🤖♻️
+
+For a post-apocalyptic themed party, I wanted a robot that "enforces" the new regime's extremely strict sustainability rules. So I put an AI on an ESP32: a tiny chip with about 300 KB of free memory.
+
+What it does:
+🔸 Interrogates guests about their habits
+🔸 Reacts to their confessions ("i took a long hot shower" → a sentence of cold showers)
+🔸 Hands out absurd penalties, like composting your own shoes or apologising to the nearest plant
+🔸 Generates about 21 words per second, fully offline
+
+How it works:
+✅ Built on Andrej Karpathy's llama2.c and DaveBben's ESP32 port
+✅ Reads the model weights straight from flash instead of RAM, so it runs on a plain ESP32 without PSRAM
+✅ Trained a custom 260K-parameter model from scratch on my laptop's CPU, on 60,000 generated interrogations, in about an hour
+✅ Found and fixed bugs along the way, including one where every boot told the exact same story
+
+The lesson: you don't always need a huge model. A tiny one with a clear, narrow job can be surprisingly fun, and it runs on hardware that costs less than a coffee.
+
+Everything is open source, including how to train your own character:
+👉 https://github.com/kamitor/esp32-llm/tree/esp32-wroom
+
+What would you put on a €5 chip? 👇
+
+#EmbeddedSystems #ESP32 #TinyML #EdgeAI #AI #MachineLearning #LLM #IoT #Maker #OpenSource #Sustainability #Electronics
+
+
+--- TIPS ---
+- Post the picture first. A photo of the board with the text on screen does best.
+- A short video of it interrogating someone gets much more reach than a still photo.
+- Add the GitHub link in the first comment as well; some say LinkedIn shows posts with links to fewer people.
+- Tag @Andrej Karpathy and DaveBben if you want to credit them (only if you know they're on LinkedIn).
+- "€5" is a rough price for a generic ESP32 board; adjust if yours cost more.

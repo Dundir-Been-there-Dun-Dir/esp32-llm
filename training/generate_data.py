@@ -8,7 +8,7 @@ Opening lines (the officer speaking first, no citizen line) are mixed in too.
     CITIZEN: i watered my lawn
     OFFICER: LAWN WATERING?! ... <penalty> <next question>
 
-Usage: python generate_data.py [--n 60000] [--out data/officer_v2.txt]
+Usage: python generate_data.py [--n 60000] [--out data/officer.txt]
 """
 
 import argparse
@@ -416,7 +416,7 @@ def exchange():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n", type=int, default=60000, help="number of exchanges")
-    parser.add_argument("--out", default="data/officer_v2.txt")
+    parser.add_argument("--out", default="data/officer.txt")
     parser.add_argument("--seed", type=int, default=1337)
     args = parser.parse_args()
     random.seed(args.seed)
