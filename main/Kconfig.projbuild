@@ -1,0 +1,49 @@
+menu "Example Configuration"
+
+    menu "I2C Master"
+        config I2C_MASTER_SCL
+            int "SCL GPIO Num"
+            default 22
+            help
+                GPIO number for I2C Master clock line.
+
+        config I2C_MASTER_SDA
+            int "SDA GPIO Num"
+            default 21
+            help
+                GPIO number for I2C Master data line.
+
+        config I2C_MASTER_FREQUENCY
+            int "Master Frequency"
+            default 400000
+            help
+                I2C Speed of Master device.
+    endmenu
+
+    choice LLM_MODE
+        prompt "Model"
+        default LLM_MODE_OFFICER
+        help
+            Which model to flash and how to talk to it.
+
+        config LLM_MODE_STORY
+            bool "Story writer (stories260K)"
+            help
+                Type the start of a story and the model continues it.
+
+        config LLM_MODE_OFFICER
+            bool "Sustainability officer (training/)"
+            help
+                The officer interrogates you: type an answer and it reacts, hands out a
+                penalty or reward and asks the next question. Needs data/officer.bin and
+                data/officer_tok.bin, made by training/train.py.
+    endchoice
+
+    config LLM_MAX_SEQ_LEN
+        int "Maximum sequence length (tokens)"
+        default 128
+        help
+            Caps the model's context length. The KV cache lives in internal RAM
+            and grows linearly with this value (~1.3KB per token for stories260K).
+
+endmenu

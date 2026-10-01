@@ -7,8 +7,15 @@ idf_component_register(SRCS "main.c" "llm.c"
 target_compile_options(${COMPONENT_LIB} PRIVATE -fno-if-conversion) # 
 
 
-# Create a SPIFFS image from the contents of the 'spiffs_image' directory
-# that fits the partition named 'data'. FLASH_IN_PROJECT indicates that
-# the generated image should be flashed when the entire project is flashed to
-# the target with 'idf.py -p PORT flash'.
-spiffs_create_partition_image(data ../data FLASH_IN_PROJECT)
+# The model and tokenizer are flashed as raw partitions and memory-mapped at
+# runtime, so the weights are read straight from flash instead of RAM.
+# 'idf.py -p PORT flash' writes them along with the app.
+if(CONFIG_LLM_MODE_OFFICER)
+    set(MODEL_FILE "${PROJECT_DIR}/data/officer.bin")
+    set(TOKENIZER_FILE "${PROJECT_DIR}/data/officer_tok.bin")
+else()
+    set(MODEL_FILE "${PROJECT_DIR}/data/stories260K.bin")
+    set(TOKENIZER_FILE "${PROJECT_DIR}/data/tok512.bin")
+endif()
+esptool_py_flash_to_partition(flash "model" "${MODEL_FILE}")
+esptool_py_flash_to_partition(flash "tokenizer" "${TOKENIZER_FILE}")

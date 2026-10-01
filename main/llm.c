@@ -19,10 +19,6 @@
 #include "esp_dsp.h"
 #include "esp_attr.h"
 
-#define MAP_FAILED NULL
-#define munmap(ptr, length) custom_munmap(ptr)
-#define close(fd) custom_close(fd)
-
 #define TASK_0_BIT (1 << 0)
 #define TASK_1_BIT (1 << 1)
 #define FORWARD_TASK_1 (1 << 2)
@@ -75,17 +71,6 @@ SemaphoreHandle_t semaForwardDataReady;
 
 void matmul_task(void *params);
 void forward_task(void *params);
-
-void custom_munmap(void *ptr)
-{
-    free(ptr);
-}
-
-int custom_close(int fd)
-{
-    // Since there are no actual file descriptors to close, simply return 0 (success)
-    return 0;
-}
 
 void chat(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler,
           char *cli_user_prompt, char *cli_system_prompt, int steps);
@@ -158,59 +143,64 @@ void memory_map_weights(TransformerWeights *w, Config *p, v4sf *ptr, int shared_
     w->wcls = shared_weights ? w->token_embedding_table : ptr;
 }
 
-void read_checkpoint(char *checkpoint, Config *config, TransformerWeights *weights,
-                     int *fd, v4sf **data, size_t *file_size)
+/**
+ * @brief Memory-maps a data partition so its contents can be read in place from flash
+ *
+ * @param label The partition label from partitions.csv
+ * @param handle Receives the handle needed to unmap the partition
+ * @param size Receives the partition size in bytes
+ * @return Pointer to the start of the partition
+ */
+static const void *map_partition(const char *label, esp_partition_mmap_handle_t *handle, size_t *size)
 {
-    FILE *file = fopen(checkpoint, "rb");
-    if (!file)
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, label);
+    if (partition == NULL)
     {
-        ESP_LOGE(TAG, "Couldn't open file %s", checkpoint);
+        ESP_LOGE(TAG, "Couldn't find partition %s", label);
         exit(EXIT_FAILURE);
     }
-    // read in the config header
-    if (fread(config, sizeof(Config), 1, file) != 1)
+    const void *ptr = NULL;
+    esp_err_t err = esp_partition_mmap(partition, 0, partition->size, ESP_PARTITION_MMAP_DATA, &ptr, handle);
+    if (err != ESP_OK)
     {
+        ESP_LOGE(TAG, "Couldn't map partition %s (%s)", label, esp_err_to_name(err));
         exit(EXIT_FAILURE);
     }
+    *size = partition->size;
+    return ptr;
+}
+
+void read_checkpoint(const char *partition_label, Config *config, TransformerWeights *weights,
+                     esp_partition_mmap_handle_t *handle, const v4sf **data)
+{
+    // the weights stay in flash and are read through the cache, which keeps them
+    // out of RAM so the model fits on chips without PSRAM
+    size_t size;
+    *data = map_partition(partition_label, handle, &size);
+    memcpy(config, *data, sizeof(Config));
     // negative vocab size is hacky way of signaling unshared weights. bit yikes.
     int shared_weights = config->vocab_size > 0 ? 1 : 0;
     config->vocab_size = abs(config->vocab_size);
     ESP_LOGI(TAG, "Vocab size if %d", config->vocab_size);
-    // figure out the file size
-    fseek(file, 0, SEEK_END); // move file pointer to end of file
-    *file_size = ftell(file); // get the file size, in bytes
-    fseek(file, 0, SEEK_SET); // move back to beginning for reading
-    ESP_LOGI(TAG, "File size: %zu bytes", *file_size);
     ESP_LOGI(TAG, "Free ram available: %lu", esp_get_free_heap_size());
-    *data = malloc(*file_size);
-    if (*data == NULL)
-    {
-        ESP_LOGE(TAG, "Malloc operation failed");
-        exit(EXIT_FAILURE);
-    }
-    // Read the entire file into memory
-    size_t bytes_read = fread(*data, 1, *file_size, file);
-    if (bytes_read != *file_size)
-    {
-        ESP_LOGE(TAG, "Failed to read file into memory");
-        ESP_LOGE(TAG, "Bytes read %zu bytes", bytes_read);
-        exit(EXIT_FAILURE);
-    }
-    fclose(file);
-
-    ESP_LOGI(TAG, "Successfully read LLM into memory");
-    ESP_LOGI(TAG, "Free ram available: %lu", esp_get_free_heap_size());
-    v4sf *weights_ptr = *data + sizeof(Config) / sizeof(v4sf);
+    v4sf *weights_ptr = (v4sf *)*data + sizeof(Config) / sizeof(v4sf);
     memory_map_weights(weights, config, weights_ptr, shared_weights);
-    ESP_LOGI(TAG, "Successfully read checkpoint");
+    // cap the context length after mapping the weights, since the layout above depends on the original seq_len
+    if (config->seq_len > CONFIG_LLM_MAX_SEQ_LEN)
+    {
+        ESP_LOGI(TAG, "Capping seq_len from %d to %d", config->seq_len, CONFIG_LLM_MAX_SEQ_LEN);
+        config->seq_len = CONFIG_LLM_MAX_SEQ_LEN;
+    }
+    ESP_LOGI(TAG, "Successfully mapped checkpoint from flash");
 }
 
-void build_transformer(Transformer *t, char *checkpoint_path)
+void build_transformer(Transformer *t, const char *partition_label)
 {
     // read in the Config and the Weights from the checkpoint
-    read_checkpoint(checkpoint_path, &t->config, &t->weights, &t->fd, &t->data, &t->file_size);
+    read_checkpoint(partition_label, &t->config, &t->weights, &t->mmap_handle, &t->data);
     // allocate the RunState buffers
     malloc_run_state(&t->state, &t->config);
+    ESP_LOGI(TAG, "Free ram available: %lu", esp_get_free_heap_size());
     ESP_LOGI(TAG, "Transformer successfully built");
 
     // FreeRTos Tasks
@@ -233,14 +223,7 @@ void build_transformer(Transformer *t, char *checkpoint_path)
 void free_transformer(Transformer *t)
 {
     // close the memory mapping
-    if (t->data != MAP_FAILED)
-    {
-        munmap(t->data, t->file_size);
-    }
-    if (t->fd != -1)
-    {
-        close(t->fd);
-    }
+    esp_partition_munmap(t->mmap_handle);
     // free the RunState buffers
     free_run_state(&t->state);
 }
@@ -307,7 +290,7 @@ void matmul_task(void *params)
             {
                 v4sf val = 0.0f;
                 v4sf *row = &p->w[i * p->n]; // Pointer to the start of the current row in matrix w
-                dsps_dotprod_f32_aes3(row, p->x, &val, p->n);
+                dsps_dotprod_f32(row, p->x, &val, p->n);
                 p->xout[i] = val;
             }
             //    ESP_LOGI(TAG, "Completed task %s", tName);
@@ -391,7 +374,7 @@ void matmul(v4sf *xout, v4sf *x, v4sf *w, int n, int d)
     {
         v4sf val = 0.0f;
         v4sf *row = &w[i * n]; // Pointer to the start of the current row in matrix w
-        dsps_dotprod_f32_aes3(row, x, &val, n);
+        dsps_dotprod_f32(row, x, &val, n);
         xout[i] = val;
     }
     if (xSemaphoreTake(semaDataReady, portMAX_DELAY) == pdTRUE)
@@ -588,7 +571,7 @@ int compare_tokens(const void *a, const void *b)
     return strcmp(((TokenIndex *)a)->str, ((TokenIndex *)b)->str);
 }
 
-void build_tokenizer(Tokenizer *t, char *tokenizer_path, int vocab_size)
+void build_tokenizer(Tokenizer *t, const char *partition_label, int vocab_size)
 {
     // i should have written the vocab_size into the tokenizer file... sigh
     ESP_LOGI(TAG, "Vocab size is %d\n", vocab_size);
@@ -602,11 +585,14 @@ void build_tokenizer(Tokenizer *t, char *tokenizer_path, int vocab_size)
         t->byte_pieces[i * 2] = (unsigned char)i;
         t->byte_pieces[i * 2 + 1] = '\0';
     }
-    // read in the file
-    FILE *file = fopen(tokenizer_path, "rb");
+    // read in the file, straight from its memory-mapped partition
+    esp_partition_mmap_handle_t handle;
+    size_t size;
+    const void *mapped = map_partition(partition_label, &handle, &size);
+    FILE *file = fmemopen((void *)mapped, size, "rb");
     if (!file)
     {
-        ESP_LOGE(TAG, "couldn't load %s", tokenizer_path);
+        ESP_LOGE(TAG, "couldn't load %s", partition_label);
         exit(EXIT_FAILURE);
     }
     ESP_LOGI(TAG, "Opened Tokenizer File");
@@ -637,6 +623,7 @@ void build_tokenizer(Tokenizer *t, char *tokenizer_path, int vocab_size)
         t->vocab[i][len] = '\0'; // add the string terminating token
     }
     fclose(file);
+    esp_partition_munmap(handle);
     ESP_LOGI(TAG, "Tokenizer successfully built");
 }
 
@@ -863,7 +850,7 @@ int sample_argmax(v4sf *probabilities, int n)
     return max_i;
 }
 
-int sample_mult(v4sf *probabilities, int n, v4sf coin)
+int sample_mult(v4sf *probabilities, int n, float coin)
 {
     // sample index from probabilities (they must sum to 1!)
     // coin is a random number in [0, 1), usually from random_f32()
@@ -890,7 +877,7 @@ int compare(const void *a, const void *b)
     return 0;
 }
 
-int sample_topp(v4sf *probabilities, int n, v4sf topp, ProbIndex *probindex, v4sf coin)
+int sample_topp(v4sf *probabilities, int n, float topp, ProbIndex *probindex, float coin)
 {
     // top-p sampling (or "nucleus sampling") samples from the smallest set of
     // tokens that exceed probability topp. This way we never sample tokens that
@@ -940,7 +927,7 @@ int sample_topp(v4sf *probabilities, int n, v4sf topp, ProbIndex *probindex, v4s
     return probindex[last_idx].index; // in case of rounding errors
 }
 
-void build_sampler(Sampler *sampler, int vocab_size, v4sf temperature, v4sf topp, unsigned long long rng_seed)
+void build_sampler(Sampler *sampler, int vocab_size, float temperature, float topp, unsigned long long rng_seed)
 {
     sampler->vocab_size = vocab_size;
     sampler->temperature = temperature;
@@ -964,7 +951,7 @@ unsigned int random_u32(unsigned long long *state)
     *state ^= *state >> 27;
     return (*state * 0x2545F4914F6CDD1Dull) >> 32;
 }
-v4sf random_f32(unsigned long long *state)
+float random_f32(unsigned long long *state)
 { // random v4sf32 in [0,1)
     return (random_u32(state) >> 8) / 16777216.0f;
 }
@@ -1018,7 +1005,7 @@ long time_in_ms()
 // ----------------------------------------------------------------------------
 // generation loop
 
-void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, generated_complete_cb cb_done)
+void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, int echo_prompt, generated_complete_cb cb_done)
 {
     char *empty_prompt = "";
     if (prompt == NULL)
@@ -1066,9 +1053,13 @@ void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, 
         }
 
         // print the token as string, decode it with the Tokenizer object
-        char *piece = decode(tokenizer, token, next);
-        safe_printf(piece); // same as printf("%s", piece), but skips "unsafe" bytes
-        fflush(stdout);
+        // (echo_prompt = 0 skips the forced prompt tokens and prints only what the model writes)
+        if (echo_prompt || pos >= num_prompt_tokens)
+        {
+            char *piece = decode(tokenizer, token, next);
+            safe_printf(piece); // same as printf("%s", piece), but skips "unsafe" bytes
+            fflush(stdout);
+        }
         token = next;
 
         // init the timer here because the first iteration can be slower

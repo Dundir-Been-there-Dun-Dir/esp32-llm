@@ -15,6 +15,7 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "esp_partition.h"
 
 typedef float v4sf __attribute__((aligned(16)));
 
@@ -98,20 +99,19 @@ typedef struct {
     Config config; // the hyperparameters of the architecture (the blueprint)
     TransformerWeights weights; // the weights of the model
     RunState state; // buffers for the "wave" of activations in the forward pass
-    // some more state needed to properly clean up the memory mapping (sigh)
-    int fd; // file descriptor for memory mapping
-    v4sf* data; // memory mapped data pointer
-    size_t file_size; // size of the checkpoint file in bytes
+    // the checkpoint is memory-mapped straight from its flash partition
+    esp_partition_mmap_handle_t mmap_handle; // handle needed to unmap it
+    const v4sf* data; // memory mapped data pointer
 } Transformer;
 
 
 
 typedef void (*generated_complete_cb)(float tokens_ps);
 
-void build_transformer(Transformer *t, char* checkpoint_path);
-void build_tokenizer(Tokenizer* t, char* tokenizer_path, int vocab_size);
+void build_transformer(Transformer *t, const char* partition_label);
+void build_tokenizer(Tokenizer* t, const char* partition_label, int vocab_size);
 void build_sampler(Sampler* sampler, int vocab_size, float temperature, float topp, unsigned long long rng_seed);
-void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, generated_complete_cb cb_done);
+void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, int echo_prompt, generated_complete_cb cb_done);
 void free_sampler(Sampler* sampler);
 void free_transformer(Transformer* t);
 void free_tokenizer(Tokenizer* t);

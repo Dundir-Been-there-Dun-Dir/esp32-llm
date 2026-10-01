@@ -1,3 +1,9 @@
 build/
 .vscode
 managed_components/
+logs/
+sdkconfig.old
+training/.venv/
+training/work/
+training/data/
+__pycache__/

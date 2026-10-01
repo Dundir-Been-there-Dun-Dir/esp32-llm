@@ -1,0 +1,84 @@
+SUSTAINABILITY OFFICER ROBOT - HARDWARE NOTES
+=============================================
+
+1. WHICH ESP32 FOR THE ROBOT?
+-----------------------------
+
+Recommendation: an ESP32-S3 with PSRAM (look for "R8" / "8MB PSRAM" in the name).
+
+Why:
+- 8 MB PSRAM fits a model several times bigger than the current 260K one,
+  which is the biggest upgrade for a smarter, more varied officer.
+  (Speed drops roughly in proportion to model size.)
+- The 128-token limit can go back to 512, so the officer can remember
+  earlier answers in an interrogation.
+- The S3 has extra maths instructions that speed up the model.
+- The original project (main branch) was written for the S3; everything we
+  built moves over by switching the build target back.
+
+Boards:
+
+  M5Stack CoreS3
+    Easiest. ESP32-S3 + 8 MB PSRAM in a finished case with touchscreen,
+    speaker, microphones, camera and battery. Could be the robot's head.
+
+  ESP32-S3-DevKitC-1 N16R8 (16 MB flash, 8 MB PSRAM)
+    Most flexible and cheap (around $15). You wire up screen, speaker and
+    servos yourself.
+
+  Seeed XIAO ESP32S3 Sense
+    Tiny, 8 MB PSRAM, microphone and camera built in. Good for a small robot.
+
+Watch out: many S3 boards have NO PSRAM. That would leave you where the
+WROOM-32 is now.
+
+How guests talk to it at a party:
+- Phone over Wi-Fi: the ESP32 hosts a small web page, guests type answers
+  on their phones. Most practical, works on any ESP32 (including the
+  current WROOM-32).
+- USB keyboard: the S3 can act as a USB host, so a keyboard can plug
+  straight into the robot.
+- Voice: see section 2. Full speech recognition and natural speech output
+  are beyond an ESP32.
+- Output: show the text on a screen. For sound, a cheap I2S amplifier
+  (MAX98357A) + small speaker can play beeps or pre-recorded "WARNING" clips.
+
+
+2. LISTENING WITH A MICROPHONE
+-----------------------------
+
+Full speech-to-text is not possible on an ESP32, but recognising a fixed
+list of words/short phrases is, using Espressif's speech library ESP-SR:
+
+- WakeNet: listens all the time for a wake word (e.g. "Hi ESP").
+  Could start a new interrogation.
+- MultiNet: recognises a list of command phrases you choose, e.g.
+  "I drove", "I walked", "hot shower", "burger", "plastic bag",
+  "recycle", "I refuse". The English version supports up to a few hundred
+  phrases (as far as I know - check the current ESP-SR docs).
+
+Why it fits: the officer was trained on fixed confessions anyway
+("i drove here", "i took a long shower", "i used a plastic bag", ...).
+Each recognised phrase becomes the "CITIZEN:" line and the officer reacts
+the way it was trained to. Anything not recognised can be treated as
+dodging the question ("Silence is suspicious, citizen.").
+Guests will soon learn what makes the robot angry - half the fun.
+
+The catch: from what I know, ESP-SR's English command recognition runs on
+the ESP32-S3 and needs PSRAM for its speech models. So it most likely won't
+work on the WROOM-32 - check the current ESP-SR docs before buying. An S3
+with 8 MB PSRAM could hold the speech models and a bigger officer model at
+the same time.
+
+What to get:
+- All-in-one: M5Stack CoreS3 (mics, speaker, screen, S3 + PSRAM, no wiring)
+- DIY: ESP32-S3 N16R8 board + INMP441 I2S microphone (a few dollars),
+  optionally MAX98357A amplifier + small speaker for sound effects
+- Small: XIAO ESP32S3 Sense (microphone built in)
+
+Flow: robot asks a question (screen or speaker) -> guest says something ->
+board matches it to one of the trained phrases -> officer gives its
+verdict and asks the next question.
+
+Next step once a board is chosen: set up ESP-SR with a phrase list that
+matches the training data in training/generate_data.py.

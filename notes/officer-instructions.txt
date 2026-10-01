@@ -1,0 +1,58 @@
+SUSTAINABILITY OFFICER - HOW TO TALK TO IT
+==========================================
+
+The officer model is already flashed on the board. You do not need to
+build or flash again.
+
+1. Open a terminal in the project folder:
+
+     cd ~/Documents/NextCloud/Github/esp32-llm
+
+2. Start the interrogation (board plugged in):
+
+     ./setup.sh talk usb0
+
+   The robot speaks first, e.g.:
+
+     OFFICER: Halt, citizen! I am Sustainability Enforcement Unit 4.
+              Why are you at this gathering, citizen?
+
+3. Type your answer after "You:" and press Enter. The officer reacts,
+   hands out a penalty or reward, and asks the next question.
+
+   - Empty line (just Enter) = start a new interrogation
+   - Ctrl+C = quit
+
+TIPS
+----
+- Short, simple confessions work best, like the training data:
+    i drove here / i walked / i took a long shower / i ate a burger /
+    i used a plastic bag / i am dancing / i brought balloons /
+    i have a dog / no comment / i want a lawyer
+- Each reply only sees your latest answer (128-token memory), but every
+  reply ends with a new question, so it still flows like an interrogation.
+- Version 1 often names the wrong thing (a car might get "landfill").
+  Version 2, with reactions that name your actual confession, is training
+  now.
+- If it says the port is busy: an old monitor is still open. Close that
+  terminal window, or run the "kill ..." command the error shows.
+
+SWITCHING BACK TO THE STORY MODEL
+---------------------------------
+  ./setup.sh build   after choosing "Story writer" in:
+  . ~/esp/esp-idf/export.sh && idf.py menuconfig
+     -> Example Configuration -> Model
+  then: ./setup.sh flash usb0
+
+OTHER COMMANDS
+--------------
+  ./setup.sh log usb0 [seconds]   save board output to logs/ (default 60s)
+  ./setup.sh build                build the firmware
+  ./setup.sh flash usb0           flash firmware + model
+
+RETRAINING (training/ folder)
+-----------------------------
+  cd training
+  .venv/bin/python generate_data.py          # writes data/officer_v2.txt
+  .venv/bin/python train.py --data data/officer_v2.txt --name officer_v2
+  Edit generate_data.py to change what the officer says.
