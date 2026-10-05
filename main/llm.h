@@ -16,7 +16,7 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-typedef float v4sf __attribute__((aligned(16)));
+typedef float v4sf; // was __attribute__((aligned(16))): an over-aligned scalar breaks float argument passing on Xtensa
 
 typedef struct {
     float prob;

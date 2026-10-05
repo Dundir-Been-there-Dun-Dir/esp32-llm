@@ -940,7 +940,7 @@ int sample_topp(v4sf *probabilities, int n, v4sf topp, ProbIndex *probindex, v4s
     return probindex[last_idx].index; // in case of rounding errors
 }
 
-void build_sampler(Sampler *sampler, int vocab_size, v4sf temperature, v4sf topp, unsigned long long rng_seed)
+void build_sampler(Sampler *sampler, int vocab_size, float temperature, float topp, unsigned long long rng_seed)
 {
     sampler->vocab_size = vocab_size;
     sampler->temperature = temperature;
