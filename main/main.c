@@ -11,6 +11,7 @@
 #include <driver/i2c.h>
 #include <string.h>
 #include "llama.h"
+#include "speak.h"
 #include "esp_random.h"
 #include "hal/usb_serial_jtag_ll.h"
 
@@ -23,6 +24,9 @@ u8g2_t u8g2;
 
 // 0 = no SSD1306 attached: skip all u8g2 calls (u8g2 HAL asserts when nothing answers on I2C)
 #define USE_DISPLAY 0
+
+// 1 = read every story out loud on the board speaker (SAM robot voice)
+#define USE_SPEECH 1
 
 /**
  * @brief Configure SSD1306 display
@@ -214,9 +218,18 @@ void app_main(void)
     Sampler sampler;
     build_sampler(&sampler, transformer.config.vocab_size, temperature, topp, rng_seed);
 
+    if (USE_SPEECH)
+        speak_init();
+
+    // boot story: RNG state 0 is what time(NULL) gave right after boot before esp_random(),
+    // so every reset tells the same story (Lily and the big red ball). Prompts stay random.
+    sampler.rng_state = 0;
     // run!
     draw_llama();
     generate(&transformer, &tokenizer, &sampler, prompt, steps, &generate_complete_cb);
+    if (USE_SPEECH)
+        speak(generated_text());
+    sampler.rng_state = rng_seed;
 
     // then keep going: each line typed on the serial monitor starts a new story
     char line[256];
@@ -227,5 +240,7 @@ void app_main(void)
         usb_serial_jtag_ll_txfifo_flush(); // no newline after the prompt: push it out now
         read_line(line, sizeof(line));
         generate(&transformer, &tokenizer, &sampler, line[0] ? line : NULL, steps, &generate_complete_cb);
+        if (USE_SPEECH)
+            speak(generated_text());
     }
 }

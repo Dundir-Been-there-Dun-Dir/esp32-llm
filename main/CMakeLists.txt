@@ -1,4 +1,4 @@
-idf_component_register(SRCS "main.c" "llm.c"
+idf_component_register(SRCS "main.c" "llm.c" "speak.c"
                     INCLUDE_DIRS ""  LDFRAGMENTS "../linker.lf")
 
 

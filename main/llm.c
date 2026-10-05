@@ -1018,8 +1018,18 @@ long time_in_ms()
 // ----------------------------------------------------------------------------
 // generation loop
 
+static char gen_text[2048];
+static int gen_len = 0;
+
+const char *generated_text(void)
+{
+    return gen_text;
+}
+
 void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, generated_complete_cb cb_done)
 {
+    gen_len = 0;
+    gen_text[0] = '\0';
     char *empty_prompt = "";
     if (prompt == NULL)
     {
@@ -1068,6 +1078,15 @@ void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, 
         // print the token as string, decode it with the Tokenizer object
         char *piece = decode(tokenizer, token, next);
         safe_printf(piece); // same as printf("%s", piece), but skips "unsafe" bytes
+        if (piece[0] && (piece[1] || isprint((unsigned char)piece[0]) || isspace((unsigned char)piece[0])))
+        {
+            int pl = strlen(piece);
+            if (gen_len + pl < (int)sizeof(gen_text))
+            {
+                memcpy(gen_text + gen_len, piece, pl + 1);
+                gen_len += pl;
+            }
+        }
         fflush(stdout);
         token = next;
 
