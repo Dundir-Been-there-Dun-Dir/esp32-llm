@@ -27,7 +27,7 @@ OFFICER: That is the most glitter I have heard since the old world ended. Your s
 ```
 
 The story model and the original ESP32-S3 version are still available: the S3 version is on the
-[`main`](https://github.com/kamitor/esp32-llm/tree/main) branch, and the story mode is one setting away
+[`main`](https://github.com/Dundir-Been-there-Dun-Dir/esp32-llm/tree/main) branch, and the story mode is one setting away
 (see [Switching models](#switching-models)).
 
 ## What you need
@@ -44,7 +44,7 @@ The story model and the original ESP32-S3 version are still available: the S3 ve
 ## Quick start
 
 ```bash
-git clone -b esp32-wroom https://github.com/kamitor/esp32-llm.git
+git clone -b esp32-wroom https://github.com/Dundir-Been-there-Dun-Dir/esp32-llm.git
 cd esp32-llm
 
 ./setup.sh install      # one time: system packages (asks for sudo) + ESP-IDF v5.3 in ~/esp/esp-idf
@@ -158,7 +158,7 @@ It still uses both cores for the matrix maths, as in the original.
 | Problem | Fix |
 |---|---|
 | Board not in `lsusb` | Charge-only cable; try another. |
-| `This chip is ESP32-S3, not ESP32` | Use the [`main`](https://github.com/kamitor/esp32-llm/tree/main) branch, or `idf.py set-target esp32s3`. |
+| `This chip is ESP32-S3, not ESP32` | Use the [`main`](https://github.com/Dundir-Been-there-Dun-Dir/esp32-llm/tree/main) branch, or `idf.py set-target esp32s3`. |
 | `port is in use` | Close any open monitor, or run the `kill` command the message shows. |
 | `talk` says no response | Run `./setup.sh log usb0 10` and check the output. |
 | Garbled output after changing the model | Flash again; the model and tokenizer must come from the same training run. |

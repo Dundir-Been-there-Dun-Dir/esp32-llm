@@ -20,7 +20,7 @@ How it works:
 The lesson: you don't always need a huge model. A tiny one with a clear, narrow job can be surprisingly fun, and it runs on hardware that costs less than a coffee.
 
 Everything is open source, including how to train your own character:
-👉 https://github.com/kamitor/esp32-llm/tree/esp32-wroom
+👉 https://github.com/Dundir-Been-there-Dun-Dir/esp32-llm/tree/esp32-wroom
 
 What would you put on a €5 chip? 👇
 
