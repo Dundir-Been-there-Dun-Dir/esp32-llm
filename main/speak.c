@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include "driver/i2s_std.h"
 #include "esp_log.h"
 #include "sam.h"
@@ -15,10 +16,24 @@
 
 static const char *TAG = "SPEAK";
 static i2s_chan_handle_t tx;
+static SemaphoreHandle_t lock; // SAM and the I2S channel are shared by the prompt loop and the link task
 int debug = 0; // SAM reads this global; upstream defines it in its CLI main.c
+
+static int volume = 60; // percent of int16 full scale; before 2026-10-10 the output was fixed at 50 %, 100 % is too loud on the 24 ohm speaker
+
+void speak_set_volume(int percent)
+{
+    volume = percent < 0 ? 0 : percent > 100 ? 100 : percent;
+}
+
+int speak_get_volume(void)
+{
+    return volume;
+}
 
 void speak_init(void)
 {
+    lock = xSemaphoreCreateMutex();
     i2s_chan_config_t cc = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
     cc.auto_clear = true; // send silence on underrun instead of repeating the last buffer
     ESP_ERROR_CHECK(i2s_new_channel(&cc, &tx, NULL));
@@ -75,7 +90,7 @@ static void say_chunk(const char *text, int len)
     {
         int k = 0;
         while (k < 512 && pos < samples)
-            out[k++] = ((int)pcm[pos++] - 128) << 7;
+            out[k++] = ((int)pcm[pos++] - 128) * 256 * volume / 100;
         size_t written;
         i2s_channel_write(tx, out, k * sizeof(int16_t), &written, portMAX_DELAY);
     }
@@ -83,6 +98,7 @@ static void say_chunk(const char *text, int len)
 
 void speak(const char *text)
 {
+    xSemaphoreTake(lock, portMAX_DELAY);
     // cut at sentence ends, or at the last space before CHUNK_MAX
     const char *p = text;
     while (*p)
@@ -106,4 +122,5 @@ void speak(const char *text)
         say_chunk(p, cut);
         p += cut;
     }
+    xSemaphoreGive(lock);
 }

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <inttypes.h>
 #include "esp_spiffs.h"
 #include "sdkconfig.h"
@@ -12,7 +14,9 @@
 #include <string.h>
 #include "llama.h"
 #include "speak.h"
+#include "link.h"
 #include "esp_random.h"
+#include "bootloader_random.h"
 #include "hal/usb_serial_jtag_ll.h"
 
 static const char *TAG = "MAIN";
@@ -183,6 +187,26 @@ int read_line(char *buf, int max)
     }
 }
 
+// Openings for an empty prompt (and the boot story). TinyStories names most heroes Lily,
+// so a free-running story is Lily nine times out of ten; a starter picks the hero instead.
+static char *starters[] = {
+    "Once upon a time, there was a little dog named Max.",
+    "Tom and Sue went to the park.",
+    "One day, a big bear found a red box.",
+    "Ben had a small boat.",
+    "There was a little bird named Pip.",
+    "Mia loved to bake cakes.",
+    "Sam the cat could not sleep.",
+    "A tiny frog lived in a pond.",
+    "Tim and his dad went to the sea.",
+    "Once upon a time, there was a big truck.",
+};
+
+static char *random_starter(void)
+{
+    return starters[esp_random() % (sizeof(starters) / sizeof(starters[0]))];
+}
+
 void app_main(void)
 {
     if (USE_DISPLAY)
@@ -201,7 +225,12 @@ void app_main(void)
 
     // parameter validation/overrides
     if (rng_seed <= 0)
-        rng_seed = esp_random(); // time(NULL) is ~0 right after boot: same story every reset
+    {
+        // time(NULL) is ~0 right after boot; esp_random() needs an entropy source before WiFi/BT is up
+        bootloader_random_enable();
+        rng_seed = ((unsigned long long)esp_random() << 32) | esp_random() | 1;
+        bootloader_random_disable();
+    }
 
     // build the Transformer via the model .bin file
     Transformer transformer;
@@ -219,17 +248,18 @@ void app_main(void)
     build_sampler(&sampler, transformer.config.vocab_size, temperature, topp, rng_seed);
 
     if (USE_SPEECH)
+    {
         speak_init();
+        link_init();
+    }
 
-    // boot story: RNG state 0 is what time(NULL) gave right after boot before esp_random(),
-    // so every reset tells the same story (Lily and the big red ball). Prompts stay random.
-    sampler.rng_state = 0;
+    // boot story: random seed and a random starter (used to be RNG state 0 = Lily and the big red ball every reset)
+    prompt = random_starter();
     // run!
     draw_llama();
     generate(&transformer, &tokenizer, &sampler, prompt, steps, &generate_complete_cb);
     if (USE_SPEECH)
         speak(generated_text());
-    sampler.rng_state = rng_seed;
 
     // then keep going: each line typed on the serial monitor starts a new story
     char line[256];
@@ -239,7 +269,15 @@ void app_main(void)
         fflush(stdout);
         usb_serial_jtag_ll_txfifo_flush(); // no newline after the prompt: push it out now
         read_line(line, sizeof(line));
-        generate(&transformer, &tokenizer, &sampler, line[0] ? line : NULL, steps, &generate_complete_cb);
+        if (USE_SPEECH && strncmp(line, "/vol", 4) == 0)
+        {
+            if (line[4])
+                speak_set_volume(atoi(line + 4));
+            printf("volume %d%%\n", speak_get_volume());
+            speak("Testing the volume. One, two, three.");
+            continue;
+        }
+        generate(&transformer, &tokenizer, &sampler, line[0] ? line : random_starter(), steps, &generate_complete_cb);
         if (USE_SPEECH)
             speak(generated_text());
     }

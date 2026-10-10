@@ -7,7 +7,9 @@
 Runs on an ESP32-S3 **N16R8** (16 MB flash, 8 MB octal PSRAM), tested on an XH-S3E-AI_V1.0 board at ~35 tok/s, and reads every story out loud.
 
 - **Fixes:** `v4sf` is a plain `float` (the 16-byte aligned scalar broke float argument passing on Xtensa: NaN output, then a crash in top-p sampling); `USE_DISPLAY 0` when no SSD1306 is attached; `sdkconfig` set to octal PSRAM and 16 MB flash.
-- **Chat:** after the boot story the board waits at `Prompt>` on the native USB port — `idf.py -p /dev/cu.usbmodem* monitor`, type the start of a story + Enter, empty line = random story. The boot story is the same on every reset (Lily and the big red ball).
+- **Chat:** after the boot story the board waits at `Prompt>` on the native USB port — `idf.py -p /dev/cu.usbmodem* monitor`, type the start of a story + Enter. An empty line (and the boot story) starts from a random opening sentence; TinyStories names most heroes Lily otherwise.
+- **Volume:** `/vol N` at `Prompt>` sets the speech level, 0–100 % of full scale (default 60); `/vol` alone shows it.
+- **Link to the `esp32-wroom` board:** UART1 on IO42 (RX) / IO41 (TX), 115200 8N1 (`main/link.c`). Every line received is printed as `[link] …` and spoken. Wire WROOM GPIO17 → IO42, GPIO16 → IO41, GND ↔ GND; leave RXD/TXD alone, they carry the S3's primary console. The `esp32-wroom` branch sends each officer turn over this link.
 - **Speech:** I2S amp on BCLK 15, WS 16, DOUT 7 (`main/speak.c`), robot voice from SAM. Set `USE_SPEECH 0` in `main/main.c` to turn it off.
 - **Power:** the XH-S3E-AI board has no USB-C CC resistors, so a USB-C to USB-C cable from a Mac gives it no power — use a USB-A port (adapter, hub or dock).
 
