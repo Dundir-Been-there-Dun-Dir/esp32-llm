@@ -677,6 +677,7 @@ void safe_printf(char *piece)
         }
     }
     printf("%s", piece);
+    link_write(piece);
 }
 
 int str_lookup(char *str, TokenIndex *sorted_vocab, int vocab_size)

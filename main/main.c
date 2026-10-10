@@ -26,6 +26,10 @@ bool display_present = false;
 #define PROMPT_MARKER "Prompt> " // ./setup.sh talk waits for this before sending a line
 #define READY_MARKER "### READY" // ./setup.sh talk shows output from here on
 #define ANSWER_MAX_LEN 120       // keeps the officer prompt well inside the 128-token context
+#define LINK_UART UART_NUM_2     // text link to the XH-S3E: GPIO17 TX -> S3 IO42, GPIO16 RX <- S3 IO41
+#define LINK_TX 17
+#define LINK_RX 16
+#define LINK_BAUD 115200
 
 /**
  * @brief Checks whether an OLED answers on the I2C bus
@@ -101,6 +105,30 @@ void init_console_input(void)
 }
 
 /**
+ * @brief Opens the UART towards the XH-S3E, which speaks every line it receives
+ */
+void link_init(void)
+{
+    uart_config_t cfg = {
+        .baud_rate = LINK_BAUD,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+    ESP_ERROR_CHECK(uart_driver_install(LINK_UART, 256, 1024, 0, NULL, 0));
+    ESP_ERROR_CHECK(uart_param_config(LINK_UART, &cfg));
+    ESP_ERROR_CHECK(uart_set_pin(LINK_UART, LINK_TX, LINK_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    ESP_LOGI(TAG, "link on UART2, TX GPIO%d / RX GPIO%d, %d baud", LINK_TX, LINK_RX, LINK_BAUD);
+}
+
+void link_write(const char *text)
+{
+    uart_write_bytes(LINK_UART, text, strlen(text));
+}
+
+/**
  * @brief Reads one line from the console, without the trailing newline
  */
 void read_prompt(char *buffer, size_t bufsize)
@@ -158,6 +186,7 @@ void app_main(void)
 {
     init_display();
     init_console_input();
+    link_init();
     write_display("Loading Model");
 
     // default parameters
@@ -215,6 +244,7 @@ void app_main(void)
         draw_llama();
         printf("OFFICER:");
         generate(&transformer, &tokenizer, &sampler, prompt, steps, 0, &generate_complete_cb);
+        link_write("\n"); // end of the officer's turn: the S3 speaks it
         read_prompt(input, sizeof(input));
     }
 #else
@@ -224,6 +254,7 @@ void app_main(void)
         read_prompt(input, sizeof(input));
         draw_llama();
         generate(&transformer, &tokenizer, &sampler, input, steps, 1, &generate_complete_cb);
+        link_write("\n");
     }
 #endif
 }

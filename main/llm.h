@@ -111,6 +111,9 @@ typedef void (*generated_complete_cb)(float tokens_ps);
 void build_transformer(Transformer *t, const char* partition_label);
 void build_tokenizer(Tokenizer* t, const char* partition_label, int vocab_size);
 void build_sampler(Sampler* sampler, int vocab_size, float temperature, float topp, unsigned long long rng_seed);
+// Copies text to the link UART towards the XH-S3E (defined in main.c)
+void link_write(const char *text);
+
 void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, char *prompt, int steps, int echo_prompt, generated_complete_cb cb_done);
 void free_sampler(Sampler* sampler);
 void free_transformer(Transformer* t);
