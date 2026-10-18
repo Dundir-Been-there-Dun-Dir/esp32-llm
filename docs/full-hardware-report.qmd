@@ -23,6 +23,8 @@ format:
 This document provides the complete hardware specification, mathematical calculations, and fabrication plan for two complementary systems:
 1. **OttoNinja Swarm:** Autonomous bipedal robots running an ESP32-S3 brain (speech, persona, edge vision) and a NiceNano v2 base (4 servos, ultrasonic proximity), coordinating over a **2.4 GHz LoRa (Semtech SX1280)** mesh network.
 2. **AR Display Glasses ("Research-Visor"):** A monocular utilitarian HUD (< 45g head module) paired with an articulated shoulder-pack SBC (Radxa Zero 3W with 0.8 TOPS NPU) providing tactical swarm overwatch and AI vision overlays.
+
+🛒 **[Click here to view the Hardware Procurement & Buying Guide (with direct purchase links & costs)](hardware-to-buy.html)**
 :::
 
 ```{mermaid}

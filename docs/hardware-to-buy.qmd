@@ -1,0 +1,159 @@
+---
+title: "Hardware Procurement & Buying Guide"
+subtitle: "Cheapest Sourced Parts, Direct Purchase Links, and Cost Totals per Option"
+author: "Engineering BOM Analysis"
+date: "2026-10-18"
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: slate
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    embed-resources: true
+    smooth-scroll: true
+---
+
+::: {.callout-note}
+## Inventory Context & Procurement Strategy
+* **Already Owned:** OpenGlass hardware (Seeed XIAO ESP32-S3 Sense + camera daughterboard + mic + 250mAh LiPo + frame clip), Raspberry Pis, Arduinos, NiceNano v2 on red shield, Otto chassis, 4 servos, HC-SR04 ultrasonic sensor, buzzer, and Bitlair workshop access.
+* **Pricing Standard:** All prices listed below are the **cheapest verified market prices** sourced from direct manufacturer outlets (AliExpress / Seeed Studio direct), with optional EU/local distributor alternatives noted.
+
+📖 **[Click here to read the Full Technical & Architectural Specification Report](index.html)**
+:::
+
+---
+
+# Project 1: OttoNinja Swarm Robot
+
+You already have the base chassis, NiceNano, 4 servos, and ultrasonic sensor for Unit 01. Below are the procurement tables for **upgrading your current OttoNinja** with full vision/radio, and for **replicating complete new swarm units**.
+
+## Option 1A: Upgrade Current OttoNinja Head (Vision, LoRa Radio & Speech)
+Adds the autonomous head brain, 2.4 GHz LoRa swarm transceiver, and I2S speaker to your existing walking chassis.
+
+| Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
+|---|---|---|---|---|---|---|
+| **Head MCU & Camera** | Seeed Studio XIAO ESP32-S3 Sense (8MB Flash, 8MB PSRAM, OV2640 Cam + PDM Mic) | Vision capture, on-device `llama2.c` persona, speech input | [Seeed Studio Store](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32S3-Sense-p-5639.html) / [AliExpress](https://www.aliexpress.com/w/wholesale-Seeed-Studio-XIAO-ESP32S3-Sense.html) | $13.99 | 1 | $13.99 |
+| **Swarm Radio** | Ebyte E28-2G4M12S (Semtech SX1280 2.4GHz LoRa SPI Module) | High-speed swarm mesh, telemetry & snapshot reception | [AliExpress Search](https://www.aliexpress.com/w/wholesale-E28-SX1280-2.4GHz-LoRa-module.html) | $6.50 | 1 | $6.50 |
+| **Audio Amplifier** | MAX98357A I2S 3.2W Class-D Mono Amp Breakout | Synthesizes loud, clear officer interrogation speech | [AliExpress Search](https://www.aliexpress.com/wholesale?search_query=MAX98357A+I2S+amplifier+module) | $1.20 | 1 | $1.20 |
+| **Micro Speaker** | 20mm 8Ω 1W Cavity Micro Speaker (with wires) | Mounts into bottom acoustic grille of head tray | [AliExpress Search](https://www.aliexpress.com/w/wholesale-20mm-8-ohm-1w-mini-speaker.html) | $0.80 | 1 | $0.80 |
+| **Power Management** | TP4056 USB-C Li-Ion Charger + 5V Boost Step-Up Board | Powers 5V rail cleanly from single lithium cell | [AliExpress Search](https://www.aliexpress.com/w/wholesale-TP4056-with-5V-boost-step-up.html) | $0.90 | 1 | $0.90 |
+| **Battery Cell** | 14500 Li-Ion 3.7V 1000mAh Rechargeable Cell | Fits inside Otto chassis (gives ~2 hours runtime) | [AliExpress Search](https://www.aliexpress.com/w/wholesale-14500-battery-3.7v-1000mah.html) | $2.50 | 1 | $2.50 |
+| **Antenna** | 2.4 GHz IPEX / U.FL Flexible PCB or Ceramic Antenna | Compact internal antenna for SX1280 | [AliExpress Search](https://www.aliexpress.com/w/wholesale-2.4G-IPEX-antenna-PCB.html) | $0.60 | 1 | $0.60 |
+| **3D Print Filaments** | Matte Black PLA / PETG (Head Tray) | Printed in-house at Bitlair | Bitlair Stock | $0.00 | 1 | $0.00 |
+
+::: {.callout-tip}
+### Option 1A Total (Upgrade Current Robot): **$26.49**
+:::
+
+---
+
+## Option 1B: Complete Additional OttoNinja Swarm Unit (From Scratch)
+Builds a completely new, independent secondary OttoNinja robot including chassis, motors, base controller, and head.
+
+| Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
+|---|---|---|---|---|---|---|
+| **Base MCU** | SuperMini nRF52840 (Nice!Nano v2 Drop-in Clone) | Runs TinyGo `gotto` locomotion & servo PWM | [AliExpress Search](https://www.aliexpress.com/w/wholesale-SuperMini-nRF52840.html) | $3.20 | 1 | $3.20 |
+| **Leg Servos** | SG90 9g Micro Servo (180° Positional Rotation) | Left and right hip tilt actuators | [AliExpress Search](https://www.aliexpress.com/w/wholesale-SG90-servo-180.html) | $1.10 | 2 | $2.20 |
+| **Foot Servos** | SG90 9g 360° Continuous Rotation Micro Servos | Left and right continuous walking / rolling feet | [AliExpress Search](https://www.aliexpress.com/w/wholesale-Servo-sg90-360.html) | $1.35 | 2 | $2.70 |
+| **Proximity Sensor** | HC-SR04 Ultrasonic Distance Sensor Module | Obstacle & citizen approach detection | [AliExpress Search](https://www.aliexpress.com/w/wholesale-HC-SR04.html) | $0.85 | 1 | $0.85 |
+| **Expression Face** | 16×8 LED Dot Matrix Display (I2C / HT16K33) | Expressive animated ninja eyes & reactions | [AliExpress Search](https://www.aliexpress.com/w/wholesale-16x8-LED-matrix-I2C.html) | $2.60 | 1 | $2.60 |
+| **Hardware Buzzer** | 5V Passive / Active Electromagnetic Buzzer | Tone generation, beeps, and melodies | [AliExpress Search](https://www.aliexpress.com/w/wholesale-5v-passive-buzzer.html) | $0.25 | 1 | $0.25 |
+| **Otto Body Chassis** | Otto Ninja 3D Printed Frame & Legs (STL) | 3D printed in-house at Bitlair | Bitlair Stock | $0.00 | 1 | $0.00 |
+| **Fasteners & Jumper Wires** | M2 screws, nuts, and 10cm dupont jumper ribbons | Mechanical assembly & shield wiring | Bitlair Stock | $0.00 | 1 | $0.00 |
+| **Complete Head Stack** | *All items from Option 1A above* (XIAO S3 Sense, SX1280, Amp, Speaker, Battery, PMIC) | Brain, radio, vision & speech stack | *See Option 1A links above* | $26.49 | 1 | $26.49 |
+
+::: {.callout-tip}
+### Option 1B Total (Complete New Robot from Scratch): **$38.29**
+*(Incredible value: a complete autonomous bipedal robot with edge vision, speech, and LoRa mesh for under $40).*
+:::
+
+---
+
+# Project 2: AR Display Glasses ("Research-Visor")
+
+You already own the **BasedHardware OpenGlass** hardware (Seeed XIAO ESP32-S3 Sense + camera + mic + 250mAh LiPo + frame clip) and **Raspberry Pis**.
+
+Below are the 3 hardware paths to turn your OpenGlass into an augmented reality system:
+
+---
+
+## Option 2A (Recommended): High-Resolution 0.39" Micro-OLED Optical Prism HUD
+*Plugs into the Raspberry Pi's HDMI port. Projects a crystal-clear, daylight-readable (1000+ nits) virtual screen floating 2.5 meters in front of your eye.*
+
+| Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
+|---|---|---|---|---|---|---|
+| **Optical HUD Module** | 0.39" Micro-OLED (1024×768) + Optical Prism Assembly + HDMI Driver Board | Virtual eye display; renders swarm radar, target boxes, and AI captions | [AliExpress Search](https://www.aliexpress.com/wholesale?SearchText=0.39+inch+OLED+micro+display+optical+prism) / [Tindie Store](https://www.tindie.com/products/hicenda/039-inch-micro-oled-display-1024x768-optical-lens/) | $78.00 | 1 | $78.00 |
+| **Swarm Radio Master** | Semtech SX1280 2.4GHz LoRa SPI Breakout (Ebyte E28) | Plugs into Raspberry Pi GPIO header; acts as Swarm Commander | [AliExpress Search](https://www.aliexpress.com/w/wholesale-E28-SX1280-2.4GHz-LoRa-module.html) | $6.50 | 1 | $6.50 |
+| **Audio Input** | Tactical Throat Microphone with 3.5mm Jack & Acoustic Tube | Immune to wind and loud room noise; whispers register clearly | [AliExpress Search](https://www.aliexpress.com/w/wholesale-3.5mm-throat-microphone-acoustic-tube.html) | $7.80 | 1 | $7.80 |
+| **Audio Output** | Bone Conduction Transducer Speaker Module (GD02 / 8Ω 1W) | Sits on temple bone; leaves ear canals completely open | [AliExpress Search](https://www.aliexpress.com/w/wholesale-bone-conduction-speaker-transducer.html) | $3.90 | 1 | $3.90 |
+| **Mini Audio Amp** | PAM8403 2×3W Miniature Stereo Class-D Amp | Drives bone-conduction transducer from Raspberry Pi audio out | [AliExpress Search](https://www.aliexpress.com/w/wholesale-PAM8403-mini-amplifier.html) | $0.65 | 1 | $0.65 |
+| **Ultra-Thin Umbilical** | 1.0m Ultra-Flexible Slim Micro-HDMI Cable | Connects head display pod down to shoulder/pocket Raspberry Pi | [AliExpress Search](https://www.aliexpress.com/w/wholesale-slim-thin-micro-hdmi-cable.html) | $3.50 | 1 | $3.50 |
+| **Power Supply** | 18650 3500mAh Li-Ion Cell + 5V 2.4A USB Step-Up / Powerbank Board | Powers Raspberry Pi & display for ~3.7 hours continuously | [AliExpress Search](https://www.aliexpress.com/w/wholesale-18650-power-bank-module-5v-2a.html) | $4.80 | 1 | $4.80 |
+| **Mounting Harness** | 3D Printed Shoulder Half-Plate + Nylon Webbing Straps | Printed and sewn in-house at Bitlair | Bitlair Stock | $0.00 | 1 | $0.00 |
+| **Head Camera & Sensor** | *Already Owned (OpenGlass XIAO S3 Sense)* | Camera and primary mic clip onto frames | Already Owned | $0.00 | 1 | $0.00 |
+| **Host Compute** | *Already Owned (Raspberry Pi 3 / 4 / Zero)* | Runs local vision AI, YOLO, and swarm orchestrator | Already Owned | $0.00 | 1 | $0.00 |
+
+::: {.callout-tip}
+### Option 2A Total (High-End Micro-OLED AR Display): **$105.15**
+:::
+
+---
+
+## Option 2B: Maker Budget DIY HUD (0.96" SPI OLED + Beam Splitter)
+*A completely 3D-printable Pepper's Ghost HUD. Uses a 0.96" OLED screen reflected off a 45° half-silvered mirror through an optical collimating doublet lens. Wire directly to your OpenGlass XIAO pins.*
+
+| Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
+|---|---|---|---|---|---|---|
+| **Micro Display** | 0.96" I2C/SPI OLED Display Module (128×64 SSD1306) | Generates ghosted HUD text, battery icons, and crosshairs | [AliExpress Search](https://www.aliexpress.com/w/wholesale-0.96-oled-display-module.html) | $1.40 | 1 | $1.40 |
+| **Collimator Lens** | 25mm Diameter Achromatic Doublet Optical Lens (Focal Length 30–40mm) | Collimates the display to infinity so your eye can focus on it | [AliExpress Search](https://www.aliexpress.com/w/wholesale-achromatic-doublet-lens-25mm.html) | $5.50 | 1 | $5.50 |
+| **Beam Splitter** | 50/50 Half-Silvered Optical Beam-Splitter Glass (25×25×1.1mm) | 45-degree angled see-through combiner reflects screen into eye | [AliExpress Search](https://www.aliexpress.com/w/wholesale-beam-splitter-glass-50-50.html) | $4.20 | 1 | $4.20 |
+| **Bone Conduction Audio** | Bone Conduction Transducer (GD02) + PAM8403 Amp | Hands-free audio cues | *See Option 2A links above* | $4.55 | 1 | $4.55 |
+| **3D Printed Optical Snout** | Matte Black Resin Housing (Printed at Bitlair) | Aligns OLED, lens, and 45° mirror rigidly on glasses temple | Bitlair Stock | $0.00 | 1 | $0.00 |
+| **Camera & Compute** | *Already Owned (OpenGlass XIAO S3 Sense)* | Direct SPI control from OpenGlass XIAO pins D0–D10 | Already Owned | $0.00 | 1 | $0.00 |
+
+::: {.callout-tip}
+### Option 2B Total (DIY Optical Beam Splitter HUD): **$15.65**
+*(Extreme budget: turn your OpenGlass into a visual HUD for under $16).*
+:::
+
+---
+
+## Option 2C: Tactical Audio Scout (Zero Screen / Audio Feedback Only)
+*Keeps the OpenGlass completely stock on your glasses frame (zero extra weight). Relies on bone-conduction audio and tactical throat-mic feedback while the Raspberry Pi commands the OttoNinja.*
+
+| Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
+|---|---|---|---|---|---|---|
+| **Bone Conduction Audio** | Bone Conduction Transducer (GD02 / 8Ω 1W) | Discreet audio feedback ("Citizen locked", "Otto en route") | [AliExpress Search](https://www.aliexpress.com/w/wholesale-bone-conduction-speaker-transducer.html) | $3.90 | 1 | $3.90 |
+| **Mini Audio Amp** | PAM8403 5V Class-D Amplifier | Amplifies Raspberry Pi audio output | [AliExpress Search](https://www.aliexpress.com/w/wholesale-PAM8403-mini-amplifier.html) | $0.65 | 1 | $0.65 |
+| **Tactical Throat Mic** | 3.5mm Covert Acoustic Tube Throat Mic | Sub-vocal speech input in noisy environments | [AliExpress Search](https://www.aliexpress.com/w/wholesale-3.5mm-throat-microphone-acoustic-tube.html) | $7.80 | 1 | $7.80 |
+| **All Other Hardware** | *Already Owned (OpenGlass XIAO S3 + Raspberry Pi)* | Camera vision capture and host AI processing | Already Owned | $0.00 | 1 | $0.00 |
+
+::: {.callout-tip}
+### Option 2C Total (Tactical Audio Scout): **$12.35**
+:::
+
+---
+
+# Grand Summary: Cost Totals per Option
+
+| Option Configuration | Hardware Purpose | Total Investment (USD) | What You Get |
+|---|---|---|---|
+| **Option 1A** | OttoNinja Robot Upgrade | **$26.49** | Adds XIAO ESP32-S3 Sense head, SX1280 2.4GHz LoRa, and I2S speaker to your existing walking chassis. |
+| **Option 1B** | Complete New OttoNinja Swarm Unit | **$38.29** | Builds a full secondary walking, talking biped robot with vision and radio from scratch. |
+| **Option 2A** | High-Res Micro-OLED AR Display Glasses | **$105.15** | Upgrades OpenGlass with daylight-readable 1024×768 optical prism HUD, throat mic, and bone conduction. |
+| **Option 2B** | DIY Pepper's Ghost HUD Glasses | **$15.65** | Ultra-cheap optical combiner clip with 0.96" OLED and collimator lens mounted to OpenGlass frame. |
+| **Option 2C** | Tactical Audio-Only OpenGlass | **$12.35** | Featherweight audio-first setup with throat mic and bone conduction (no visual screen). |
+
+---
+
+### Recommended Purchasing Cart
+
+If you want the full, high-end experience (upgraded OttoNinja + true high-resolution AR Display HUD):
+
+1. **OttoNinja Head Upgrade (Option 1A):** **$26.49**
+2. **0.39" Micro-OLED AR Glasses Upgrade (Option 2A):** **$105.15**
+3. **Combined Total:** **~$131.64** *(Everything you need for an autonomous AI biped robot communicating with tactical AR glasses).*
