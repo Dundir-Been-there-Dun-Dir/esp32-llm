@@ -1,0 +1,268 @@
+---
+title: "OttoNinja Swarms & AI AR Glasses"
+subtitle: "Hardware Architecture, Radio Calculations, Pinout Schematics & Bitlair Fabrication Guide"
+author: "Engineering Spec & Analysis"
+date: "2026-10-18"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: show
+    embed-resources: true
+    smooth-scroll: true
+---
+
+::: {.callout-note}
+## Executive Summary
+This document provides the complete hardware specification, mathematical calculations, and fabrication plan for two complementary systems:
+1. **OttoNinja Swarm:** Autonomous bipedal robots running an ESP32-S3 brain (speech, persona, edge vision) and a NiceNano v2 base (4 servos, ultrasonic proximity), coordinating over a **2.4 GHz LoRa (Semtech SX1280)** mesh network.
+2. **AR Display Glasses ("Research-Visor"):** A monocular utilitarian HUD (< 45g head module) paired with an articulated shoulder-pack SBC (Radxa Zero 3W with 0.8 TOPS NPU) providing tactical swarm overwatch and AI vision overlays.
+:::
+
+```mermaid
+flowchart TD
+    subgraph AR_HUD ["AR Display Glasses (Tactical Overwatch)"]
+        Glasses["Head Unit (<45g)\n0.39' Micro-OLED + Prism\nPinhole Camera + Bone Conduction / Mic"]
+        Shoulder["Shoulder Half-Plate (~180g)\nRadxa Zero 3W (0.8 TOPS NPU)\nSemtech SX1280 2.4 GHz LoRa Master\n18650 Li-Ion (3500mAh)"]
+        Glasses <-->|Umbilical Cable| Shoulder
+    end
+
+    subgraph LoRa_Mesh ["2.4 GHz LoRa Swarm Link (~200 kbps)"]
+        LoRa1["Telemetry, Alerts, Waypoints & 160x120 JPEG Snapshots"]
+    end
+
+    subgraph Otto_Swarm ["OttoNinja Swarm Units (~$57.50 / robot)"]
+        Otto1["Otto Unit 01\nHead: XIAO S3 Sense (8MB PSRAM + Cam)\nBase: NiceNano (4 Servos + HC-SR04)\nRadio: SX1280 LoRa Node"]
+        Otto2["Otto Unit 02\nHead: XIAO S3 Sense\nBase: NiceNano\nRadio: SX1280 LoRa Node"]
+        OttoN["Otto Unit N..."]
+    end
+
+    Shoulder <===> LoRa_Mesh
+    LoRa_Mesh <===> Otto1
+    LoRa_Mesh <===> Otto2
+    LoRa_Mesh <===> OttoN
+```
+
+---
+
+# Radio Spectrum & Swarm Networking
+
+## The Fundamental Vision Constraint
+Because **LoRa is an ultra-low-bandwidth radio**, raw video cannot stream over the air. Instead:
+- Vision inference (face detection, citizen detection, bounding boxes) runs **on the edge** (on the robot's XIAO S3 Sense or the glasses' Radxa Zero 3W NPU).
+- Telemetry consists of compact semantic tokens: `[TARGET_ACQUIRED, DIST=1.2m, BEARING=045°]`.
+- Low-resolution visual snapshots (160×120 grayscale JPEG, ~2.5 KB) can be pulled on-demand.
+
+## Radio Comparison Matrix
+
+| Parameter | Sub-GHz LoRa (SX1262 @ 868MHz EU) | 2.4 GHz LoRa (Semtech SX1280) | ESP-NOW (2.4 GHz Wi-Fi PHY) |
+|---|---|---|---|
+| **Raw Bitrate** | 5.47 kbps – 21.8 kbps | **253.9 kbps** (SF5/1625kHz) | 1,000 – 2,000 kbps (1–2 Mbps) |
+| **Indoor / Building Range** | **300m – 1 km** (Superior penetration) | 100m – 300m | 30m – 80m |
+| **Outdoor Line-of-Sight** | **3 km – 10 km** | 800m – 2 km | 100m – 200m |
+| **Antenna Length** | 8.6 cm (whip / coil) | **3.1 cm** (or ceramic chip) | PCB trace antenna |
+| **Legal Duty Cycle (EU)** | **Strict 1.0%** (36 sec TX / hr) | **No duty cycle limit** (ISM 2.4 GHz) | No duty cycle limit |
+| **24-Byte Telemetry Airtime** | 46.3 ms | **1.82 ms** (25× faster) | < 0.2 ms |
+| **2.5 KB Snapshot Airtime** | 3.74 s (Impractical / Chokes network) | **0.114 s (114 ms)** | 0.02 s |
+| **Global License Status** | Regional (868 EU, 915 US) | **Worldwide license-free** | Worldwide license-free |
+
+## Mathematical Calculations
+
+### Telemetry Heartbeat (24 Bytes)
+$$\text{Symbol Duration } T_s = \frac{2^{SF}}{BW}$$
+
+- **Sub-GHz LoRa (SF7, BW 125 kHz):** $T_s = 1.024\text{ ms} \implies \text{ToA} \approx \mathbf{46.3\text{ ms}}$. Under EU 1% duty cycle, max broadcast rate is once every **4.63 seconds**.
+- **2.4 GHz LoRa (SF5, BW 1625 kHz):** $T_s = 0.0197\text{ ms} \implies \text{ToA} \approx \mathbf{1.82\text{ ms}}$. Zero duty cycle limits allow bursting 20 updates/second.
+
+### Visual Snapshot (160×120 Grayscale JPEG = 2.5 KB = 20,480 Bits)
+- **Sub-GHz LoRa:** $\frac{20480\text{ bits}}{5470\text{ bps}} = \mathbf{3.74\text{ s}}$ (Consumes >10% of hourly transmission budget in one photo).
+- **2.4 GHz LoRa (SX1280):** $\frac{20480\text{ bits}}{180000\text{ bps}} = \mathbf{0.114\text{ s (114 ms)}}$. Highly practical for tactical visual confirmation.
+
+---
+
+# AR Display Glasses ("Research-Visor") Architecture
+
+Following the design philosophy from `Research-Visor`, this system is an industrial/research **exosense**, not a consumer gadget.
+
+## Optical Solutions Compared
+
+| Solution | Display & Resolution | FOV & Eye Relief | Weight | Cost | Verdict |
+|---|---|---|---|---|---|
+| **0.39" Micro-OLED + Prism (Recommended)** | Sony ECX336C (1024×768 / 1080p) | ~30° FOV, 20mm relief, virtual image at 2.5m | ~25g | ~$85 | **Winner:** Pre-aligned collimating optics, crystal clear text, daylight visible (1000+ nits). |
+| **Waveshare 1.51" Transparent OLED** | 128×64 Monochrome | Direct view | ~18g | ~$20 | **Unusable without optics:** The human eye cannot focus 2–3 cm away without collimation lenses. |
+| **DIY 0.96" OLED + Beam Splitter** | 128×64 SSD1306 + Achromatic lens | ~15° FOV | ~35g | ~$25 | Cheap DIY fallback, but bulky optical snout and low resolution. |
+
+## Compute & Split Architecture
+- **Head Module (< 45g):** 0.39" Micro-OLED + optical prism pod, miniature wide-angle pinhole camera (OV5640 / IMX219), bone-conduction audio transducer, and throat mic.
+- **Shoulder Half-Plate (~180g):**
+  - **SBC:** **Radxa Zero 3W** (Quad Cortex-A55 @ 1.6GHz, **0.8 TOPS NPU**, 1GB LPDDR4). Crucial advantage over Pi Zero 2W: runs local YOLOv8 at 25 FPS.
+  - **Radio:** Semtech SX1280 2.4 GHz LoRa Master transceiver.
+  - **Battery:** Single 18650 cell (3500 mAh) or 21700 cell (5000 mAh).
+
+## Battery Life Calculations
+- **System Power Consumption:**
+  - Radxa Zero 3W (Linux + camera + NPU): 2.10 W
+  - Micro-OLED & HDMI Controller: 0.65 W
+  - Pinhole Camera: 0.20 W
+  - SX1280 Radio (RX listening): 0.08 W
+  - Audio & Transducer: 0.12 W
+  - **Total System Power:** $\mathbf{3.15\text{ W (approx. 630 mA @ 5V)}}$
+- **Run-time with 18650 Cell (3500 mAh @ 3.7V = 12.95 Wh, 90% boost eff):**  
+  $$\text{Run-time} = \frac{12.95 \times 0.90}{3.15} \approx \mathbf{3.70\text{ hours continuous operation}}$$
+  *(With a 21700 5000 mAh cell: **5.28 hours**).*
+
+---
+
+# OttoNinja Swarm Hardware & Pinout
+
+## Electrical Interconnection Schematic
+
+```
+                                  +5V / VIN Rail (Battery via Boost PMIC)
+                                  |
+               +------------------+------------------+
+               |                  |                  |
+               v (5V / VIN)       v (5V)             v (5V)
+        +-------------+    +-------------+    +-------------+
+        | XIAO S3     |    | MAX98357A   |    | NiceNano    |
+        | Sense (Head)|    | Amp         |    | Shield Base |
+        +------+------+    +------+------+    +------+------+
+               | (3.3V)           |                  |
+               v                  |                  v (Switched VCC P0.13)
+        +-------------+           |           +-------------+
+        | SX1280 LoRa |           |           | 4x Servos   |
+        | Module      |           |           | HC-SR04     |
+        +-------------+           |           +-------------+
+               |                  |                  |
+               +--- 2-Wire Serial Command Link ------+
+                    (Head TX <-> Base RX, Baud 115200)
+```
+
+## Detailed Pin Assignments
+
+| Subsystem | Signal Name | XIAO ESP32-S3 Pin | Destination | Notes |
+|---|---|---|---|---|
+| **Inter-Board UART** | `UART_TX` | **D4** (GPIO 5) | NiceNano **Header 022** (`P0_22` RX) | Motion commands (`WALK`, `WIGGLE`, etc.) |
+| | `UART_RX` | **D5** (GPIO 6) | NiceNano **Header 024** (`P0_24` TX) | `READY`, `DONE`, `PROXIMITY <mm>` |
+| **LoRa (SX1280)** | `LORA_NSS` | **D0** (GPIO 1) | SX1280 `NSS` (Pin 4) | SPI Chip Select (Active Low) |
+| | `LORA_BUSY`| **D1** (GPIO 2) | SX1280 `BUSY` (Pin 5) | Status indicator |
+| | `LORA_DIO1`| **D2** (GPIO 3) | SX1280 `DIO1` (Pin 6) | Packet TX/RX Done Interrupt |
+| | `LORA_RST` | **D3** (GPIO 4) | SX1280 `NRESET` (Pin 7) | Hardware Reset |
+| | `SPI_MOSI` | **D9** (GPIO 8) | SX1280 `MOSI` | SPI Master Out |
+| | `SPI_SCK` | **D10** (GPIO 9)| SX1280 `SCK` | SPI Clock |
+| **Audio (I2S Amp)**| `I2S_DOUT` | **D6** (GPIO 43)| MAX98357A `DIN` | Digital PCM Audio |
+| | `I2S_BCLK` | **D7** (GPIO 44)| MAX98357A `BCLK` | Bit Clock |
+| | `I2S_LRC` | **D8** (GPIO 7) | MAX98357A `LRC` | Word Clock (16 kHz) |
+| **NiceNano Base** | `RFoot` | NiceNano `P0_06` | Header `006` | 360° Continuous Servo (`PWM2`) |
+| | `RLeg` | NiceNano `P0_08` | Header `008` | 180° Tilt Servo (`PWM1`) |
+| | `LLeg` | NiceNano `P0_17` | Header `017` | 180° Tilt Servo (`PWM1`) |
+| | `LFoot` | NiceNano `P0_20` | Header `020` | 360° Continuous Servo (`PWM2`) |
+| | `USTrig`| NiceNano `P1_00` | Header `100` | HC-SR04 Trigger |
+| | `USEcho`| NiceNano `P0_11` | Header `011` | HC-SR04 Echo |
+| | `Buzzer`| NiceNano `P0_31` | Header `031` | PWM Hardware Buzzer (`PWM0`) |
+| | `PowerGate`| NiceNano `P0_13` | Internal MOSFET | Powers on/off servo & sensor rail |
+
+::: {.callout-warning}
+**Pin 029 Caution:** NiceNano pin `P0.29` has a hard ground connection on this shield. Never drive `P0.29` high.
+:::
+
+## OttoNinja Power Consumption & Runtime
+- **Weighted Average Draw:** $\mathbf{327\text{ mA @ 5V (1.63 W)}}$ (35% walk, 25% speak, 40% sentry).
+- **14500 Li-Ion (1000 mAh):** **~1.93 hours (116 min)** active runtime.
+- **18650 Backpack (3200 mAh):** **~6.17 hours**.
+
+---
+
+# Bill of Materials (BOM) & Costs
+
+## OttoNinja Swarm Unit (~$57.50 / robot)
+- **Head Brain & Camera:** Seeed Studio XIAO ESP32S3 Sense (8MB Flash, 8MB PSRAM, OV2640, Mic) — **$14.00**
+- **LoRa Radio:** Semtech SX1280 2.4 GHz SPI Module — **$6.50**
+- **Audio Output:** MAX98357A I2S Class-D Amp + 1W 8Ω Micro Speaker — **$2.50**
+- **Base Controller:** NiceNano v2 (Nordic nRF52840) — **$12.00**
+- **Actuators:** 2× SG90 180° + 2× SG90 360° Servos — **$8.00**
+- **Sensors & Matrix:** HC-SR04 Ultrasonic + 16×8 LED Matrix — **$5.00**
+- **Chassis:** 3D Printed Otto Ninja Chassis — **$5.00**
+- **Battery & Charger:** 14500 Li-Ion (1000mAh) + TP4056 USB-C Charger & Step-Up — **$4.50**
+
+## AR Display Glasses & Shoulder Mount (~$160.50 complete)
+- **Optical HUD Kit:** 0.39" Micro-OLED (1024×768) + Optical Prism Assembly + HDMI Board — **$85.00**
+- **Head Camera & Frame:** OV5640 / IMX219 Pinhole Camera + 3D Printed Monocular Frame — **$14.00**
+- **Audio Stack:** Throat Microphone + Bone Conduction Transducer — **$14.00**
+- **Shoulder SBC:** Radxa Zero 3W (Quad A55, 0.8 TOPS NPU, 1GB LPDDR4) — **$22.00**
+- **LoRa Radio:** Semtech SX1280 2.4 GHz LoRa SPI Breakout — **$6.50**
+- **Harness:** 3D Printed Shoulder Half-Plate + Webbing Harness — **$8.00**
+- **Power:** 18650 3500mAh Li-Ion + 5V 2A PMIC Boost/Charger — **$11.00**
+
+---
+
+# Fabrication & Assembly Workflow at Bitlair
+
+1. **Resin (SLA) Printers:**
+   - Print the optical lens pod and prism bracket in matte black resin. Sub-50-micron tolerance ensures perfect optical alignment with zero internal light scatter.
+2. **FDM 3D Printers:**
+   - Print `cad/head_mount_bracket.scad` in PETG or PLA with 3 perimeters and 20% infill for M2 screw boss durability.
+3. **Laser Cutter:**
+   - Cut smoked acrylic faceplates for Otto's 16×8 LED matrix and magnetic snap-on sunglasses for the AR visor.
+4. **Textile / Sewing Station:**
+   - Sew the half-plate shoulder strap harness, battery holsters, and cable-routing sleeve.
+5. **Electronics Bench:**
+   - Solder the fine-pitch SPI connections to the XIAO S3 Sense and tune servo trims using bench power supplies.
+
+---
+
+# Software & Serial Bridge Implementation
+
+## TinyGo Base Firmware (`gotto`)
+The base firmware is located at [`../gotto/examples/serial_bridge/main.go`](../gotto/examples/serial_bridge/main.go) and compiles with `tinygo build -target=nicenano`.
+
+```go
+// Excerpt from gotto/examples/serial_bridge/main.go
+func handleCommand(n *ninja.Ninja, uart *machine.UART, line string) {
+    parts := strings.Fields(line)
+    cmd := strings.ToUpper(parts[0])
+
+    switch cmd {
+    case "WAKEUP":
+        _ = n.WakeUp()
+        sendReply(uart, "DONE WAKEUP")
+    case "WALK":
+        steps := 2
+        if len(parts) > 1 {
+            steps, _ = strconv.Atoi(parts[1])
+        }
+        _ = n.Walk(steps)
+        sendReply(uart, "DONE WALK")
+    case "WIGGLE":
+        _ = n.HappyWiggle()
+        sendReply(uart, "DONE WIGGLE")
+    case "CURIOUS":
+        _ = n.CuriousLook()
+        sendReply(uart, "DONE CURIOUS")
+    case "MOONWALK":
+        steps := 2
+        if len(parts) > 1 {
+            steps, _ = strconv.Atoi(parts[1])
+        }
+        _ = n.Moonwalk(steps)
+        sendReply(uart, "DONE MOONWALK")
+    }
+}
+```
+
+## ESP-IDF Brain Driver (`esp32-llm`)
+The ESP32 driver is located at [`main/serial_bridge.h`](main/serial_bridge.h) and [`main/serial_bridge.c`](main/serial_bridge.c).
+
+```c
+// Excerpt from esp32-llm/main/serial_bridge.h
+typedef void (*bridge_proximity_cb)(int distance_mm);
+typedef void (*bridge_motion_done_cb)(const char *cmd_name);
+
+esp_err_t bridge_init(int uart_num, int tx_pin, int rx_pin, int baud_rate);
+void bridge_set_proximity_cb(bridge_proximity_cb cb);
+esp_err_t bridge_send_command(const char *cmd);
+esp_err_t bridge_send_and_wait(const char *cmd, uint32_t timeout_ms);
+```
