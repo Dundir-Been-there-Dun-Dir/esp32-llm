@@ -5,7 +5,10 @@ author: "Engineering Spec & Analysis"
 date: "2026-10-18"
 format:
   html:
-    theme: darkly
+    theme:
+      light: cosmo
+      dark: slate
+    css: styles.css
     toc: true
     toc-depth: 3
     toc-location: left
@@ -22,28 +25,28 @@ This document provides the complete hardware specification, mathematical calcula
 2. **AR Display Glasses ("Research-Visor"):** A monocular utilitarian HUD (< 45g head module) paired with an articulated shoulder-pack SBC (Radxa Zero 3W with 0.8 TOPS NPU) providing tactical swarm overwatch and AI vision overlays.
 :::
 
-```mermaid
+```{mermaid}
 flowchart TD
-    subgraph AR_HUD ["AR Display Glasses (Tactical Overwatch)"]
-        Glasses["Head Unit (<45g)\n0.39' Micro-OLED + Prism\nPinhole Camera + Bone Conduction / Mic"]
-        Shoulder["Shoulder Half-Plate (~180g)\nRadxa Zero 3W (0.8 TOPS NPU)\nSemtech SX1280 2.4 GHz LoRa Master\n18650 Li-Ion (3500mAh)"]
+    subgraph AR_HUD ["AR Display Glasses - Tactical Overwatch"]
+        Glasses["Head Unit (&lt;45g)<br/>0.39-inch Micro-OLED + Prism<br/>Pinhole Camera + Throat Mic / Audio"]
+        Shoulder["Shoulder Half-Plate (~180g)<br/>Radxa Zero 3W (0.8 TOPS NPU)<br/>Semtech SX1280 2.4 GHz LoRa Master<br/>18650 Li-Ion (3500mAh)"]
         Glasses <-->|Umbilical Cable| Shoulder
     end
 
-    subgraph LoRa_Mesh ["2.4 GHz LoRa Swarm Link (~200 kbps)"]
-        LoRa1["Telemetry, Alerts, Waypoints & 160x120 JPEG Snapshots"]
+    subgraph LoRa_Mesh ["2.4 GHz LoRa Swarm Mesh (~200 kbps)"]
+        LoRa1["Telemetry, Alerts, Waypoints<br/>&amp; 160x120 JPEG Snapshots"]
     end
 
     subgraph Otto_Swarm ["OttoNinja Swarm Units (~$57.50 / robot)"]
-        Otto1["Otto Unit 01\nHead: XIAO S3 Sense (8MB PSRAM + Cam)\nBase: NiceNano (4 Servos + HC-SR04)\nRadio: SX1280 LoRa Node"]
-        Otto2["Otto Unit 02\nHead: XIAO S3 Sense\nBase: NiceNano\nRadio: SX1280 LoRa Node"]
+        Otto1["Otto Unit 01<br/>Head: XIAO S3 Sense + Cam<br/>Base: NiceNano (4 Servos)<br/>Radio: SX1280 LoRa Node"]
+        Otto2["Otto Unit 02<br/>Head: XIAO S3 Sense + Cam<br/>Base: NiceNano (4 Servos)<br/>Radio: SX1280 LoRa Node"]
         OttoN["Otto Unit N..."]
     end
 
-    Shoulder <===> LoRa_Mesh
-    LoRa_Mesh <===> Otto1
-    LoRa_Mesh <===> Otto2
-    LoRa_Mesh <===> OttoN
+    Shoulder <--> LoRa1
+    LoRa1 <--> Otto1
+    LoRa1 <--> Otto2
+    LoRa1 <--> OttoN
 ```
 
 ---

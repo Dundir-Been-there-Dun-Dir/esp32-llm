@@ -34,7 +34,8 @@ jobs:
 
       - name: Render Quarto Documentation to HTML
         run: |
-          quarto render docs/full-hardware-report.qmd --to html --output index.html
+          quarto render docs/full-hardware-report.qmd
+          cp docs/full-hardware-report.html docs/index.html
           touch docs/.nojekyll
 
       - name: Setup Pages

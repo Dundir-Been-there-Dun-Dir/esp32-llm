@@ -1,0 +1,131 @@
+/* Modern, Clean Engineering Documentation Stylesheet */
+
+:root {
+  --font-family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+}
+
+body {
+  font-family: var(--font-family-sans-serif);
+  color: var(--text-main);
+  line-height: 1.65;
+  font-size: 1.05rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+h1.title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* Callout Styling */
+.callout {
+  border-radius: 8px;
+  border-left-width: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 1.5rem 0;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th {
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:nth-child(even) {
+  background-color: #fcfdfe;
+}
+
+/* Mermaid Diagrams */
+.cell-output-display .mermaid {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Code Blocks */
+pre, code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+pre {
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+/* Sidebar navigation */
+.sidebar nav[role="doc-toc"] ul li a.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Dark mode overrides when user switches */
+@media (prefers-color-scheme: dark) {
+  body.quarto-dark {
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    background-color: #0f172a;
+  }
+  body.quarto-dark h1, 
+  body.quarto-dark h2, 
+  body.quarto-dark h3, 
+  body.quarto-dark h4 {
+    color: #f8fafc;
+  }
+  body.quarto-dark table th {
+    background-color: #1e293b;
+    color: #f8fafc;
+  }
+  body.quarto-dark tr:nth-child(even) {
+    background-color: #1e293b40;
+  }
+  body.quarto-dark .cell-output-display .mermaid {
+    background: #1e293b;
+  }
+}
