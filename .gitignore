@@ -7,3 +7,4 @@ training/.venv/
 training/work/
 training/data/
 __pycache__/
+.DS_Store
