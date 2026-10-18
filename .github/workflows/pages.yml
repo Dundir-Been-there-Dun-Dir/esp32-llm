@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Build and Deploy Docs to GitHub Pages
 
 on:
   push:
@@ -20,19 +20,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render Quarto Documentation to HTML
+        run: |
+          quarto render docs/full-hardware-report.qmd --to html --output index.html
+          touch docs/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs/'
