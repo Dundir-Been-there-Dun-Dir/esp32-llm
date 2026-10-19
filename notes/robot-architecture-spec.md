@@ -1,6 +1,9 @@
 # Otto Sustainability Officer Robot - Architecture & Progress Snapshot
 
-**Last Updated:** 2026-10-10  
+**Last Updated:** 2026-10-19  
+**Session Memory & Full Handoff:** `MEMORY.md`  
+**Buying Guide:** `docs/hardware-to-buy.html`  
+**Live Site:** https://dundir-been-there-dun-dir.github.io/esp32-llm/  
 **Specification Doc:** `docs/superpowers/specs/2026-10-10-otto-robot-design.md`
 
 ## Quick Summary
