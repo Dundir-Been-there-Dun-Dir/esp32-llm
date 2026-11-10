@@ -88,7 +88,9 @@ Below are the 3 hardware paths to turn your OpenGlass into an augmented reality 
 |---|---|---|---|---|---|---|
 | **Optical HUD Module** | 0.39" Micro-OLED (1024×768) + Optical Prism Assembly + HDMI Driver Board | Virtual eye display; renders swarm radar, target boxes, and AI captions | [AliExpress Search](https://www.aliexpress.com/wholesale?SearchText=0.39+inch+OLED+micro+display+optical+prism) / [Tindie Store](https://www.tindie.com/products/hicenda/039-inch-micro-oled-display-1024x768-optical-lens/) | $78.00 | 1 | $78.00 |
 | **Swarm Radio Master** | Semtech SX1280 2.4GHz LoRa SPI Breakout (Ebyte E28) | Plugs into Raspberry Pi GPIO header; acts as Swarm Commander | [AliExpress Search](https://www.aliexpress.com/w/wholesale-E28-SX1280-2.4GHz-LoRa-module.html) | $6.50 | 1 | $6.50 |
-| **Audio Input** | Tactical Throat Microphone with 3.5mm Jack & Acoustic Tube | Immune to wind and loud room noise; whispers register clearly | [AliExpress Search](https://www.aliexpress.com/w/wholesale-3.5mm-throat-microphone-acoustic-tube.html) | $7.80 | 1 | $7.80 |
+| **Tactical Throat Mic** | Dual-Transponder Tactical Throat Mic with Collar Band | Immune to wind and loud room noise; whispers register clearly | [AliExpress Search](https://www.aliexpress.com/w/wholesale-tactical-throat-mic-3.5mm-acoustic-tube.html) | $11.50 | 1 | $11.50 |
+| **Finger PTT Switch** | Tactical Velcro Finger Push-To-Talk Button (runs down sleeve) | Prevents false wake-ups from swallowing or coughing | [AliExpress Search](https://www.aliexpress.com/w/wholesale-tactical-finger-ptt-switch.html) | $3.20 | 1 | $3.20 |
+| **USB Audio Interface** | USB-C / USB-A to 3.5mm TRRS DAC/ADC Dongle (Realtek ALC5686) | Provides required 2.5V-3.3V electret mic bias for Pi/Radxa | [AliExpress Search](https://www.aliexpress.com/w/wholesale-type-c-to-3.5mm-dac-adc-mic-cable.html) | $4.50 | 1 | $4.50 |
 | **Audio Output** | Bone Conduction Transducer Speaker Module (GD02 / 8Ω 1W) | Sits on temple bone; leaves ear canals completely open | [AliExpress Search](https://www.aliexpress.com/w/wholesale-bone-conduction-speaker-transducer.html) | $3.90 | 1 | $3.90 |
 | **Mini Audio Amp** | PAM8403 2×3W Miniature Stereo Class-D Amp | Drives bone-conduction transducer from Raspberry Pi audio out | [AliExpress Search](https://www.aliexpress.com/w/wholesale-PAM8403-mini-amplifier.html) | $0.65 | 1 | $0.65 |
 | **Ultra-Thin Umbilical** | 1.0m Ultra-Flexible Slim Micro-HDMI Cable | Connects head display pod down to shoulder/pocket Raspberry Pi | [AliExpress Search](https://www.aliexpress.com/w/wholesale-slim-thin-micro-hdmi-cable.html) | $3.50 | 1 | $3.50 |
@@ -98,7 +100,7 @@ Below are the 3 hardware paths to turn your OpenGlass into an augmented reality 
 | **Host Compute** | *Already Owned (Raspberry Pi 3 / 4 / Zero)* | Runs local vision AI, YOLO, and swarm orchestrator | Already Owned | $0.00 | 1 | $0.00 |
 
 ::: {.callout-tip}
-### Option 2A Total (High-End Micro-OLED AR Display): **$105.15**
+### Option 2A Total (High-End Micro-OLED AR Display): **$116.55**
 :::
 
 ---
@@ -127,13 +129,15 @@ Below are the 3 hardware paths to turn your OpenGlass into an augmented reality 
 
 | Component | Specification / Model | Purpose | Where to Buy (Cheapest Direct Link) | Unit Price | Qty | Subtotal |
 |---|---|---|---|---|---|---|
+| **Dual Throat Mic** | Dual-Transponder Tactical Throat Mic with Collar Band | Sub-vocal speech input in noisy environments | [AliExpress Search](https://www.aliexpress.com/w/wholesale-tactical-throat-mic-3.5mm-acoustic-tube.html) | $11.50 | 1 | $11.50 |
+| **Finger PTT Switch** | Tactical Velcro Finger Push-To-Talk Button | Hands-free click-to-talk transmission | [AliExpress Search](https://www.aliexpress.com/w/wholesale-tactical-finger-ptt-switch.html) | $3.20 | 1 | $3.20 |
+| **USB Audio Interface** | USB-C to 3.5mm TRRS DAC/ADC Dongle (Realtek ALC5686) | Mic bias & headphone output for Raspberry Pi | [AliExpress Search](https://www.aliexpress.com/w/wholesale-type-c-to-3.5mm-dac-adc-mic-cable.html) | $4.50 | 1 | $4.50 |
 | **Bone Conduction Audio** | Bone Conduction Transducer (GD02 / 8Ω 1W) | Discreet audio feedback ("Citizen locked", "Otto en route") | [AliExpress Search](https://www.aliexpress.com/w/wholesale-bone-conduction-speaker-transducer.html) | $3.90 | 1 | $3.90 |
 | **Mini Audio Amp** | PAM8403 5V Class-D Amplifier | Amplifies Raspberry Pi audio output | [AliExpress Search](https://www.aliexpress.com/w/wholesale-PAM8403-mini-amplifier.html) | $0.65 | 1 | $0.65 |
-| **Tactical Throat Mic** | 3.5mm Covert Acoustic Tube Throat Mic | Sub-vocal speech input in noisy environments | [AliExpress Search](https://www.aliexpress.com/w/wholesale-3.5mm-throat-microphone-acoustic-tube.html) | $7.80 | 1 | $7.80 |
 | **All Other Hardware** | *Already Owned (OpenGlass XIAO S3 + Raspberry Pi)* | Camera vision capture and host AI processing | Already Owned | $0.00 | 1 | $0.00 |
 
 ::: {.callout-tip}
-### Option 2C Total (Tactical Audio Scout): **$12.35**
+### Option 2C Total (Tactical Audio Scout): **$23.75**
 :::
 
 ---
@@ -144,16 +148,16 @@ Below are the 3 hardware paths to turn your OpenGlass into an augmented reality 
 |---|---|---|---|
 | **Option 1A** | OttoNinja Robot Upgrade | **$26.49** | Adds XIAO ESP32-S3 Sense head, SX1280 2.4GHz LoRa, and I2S speaker to your existing walking chassis. |
 | **Option 1B** | Complete New OttoNinja Swarm Unit | **$38.29** | Builds a full secondary walking, talking biped robot with vision and radio from scratch. |
-| **Option 2A** | High-Res Micro-OLED AR Display Glasses | **$105.15** | Upgrades OpenGlass with daylight-readable 1024×768 optical prism HUD, throat mic, and bone conduction. |
+| **Option 2A** | High-Res Micro-OLED AR Display Glasses | **$116.55** | Upgrades OpenGlass with daylight-readable 1024×768 optical prism HUD, throat mic, PTT, USB audio, and bone conduction. |
 | **Option 2B** | DIY Pepper's Ghost HUD Glasses | **$15.65** | Ultra-cheap optical combiner clip with 0.96" OLED and collimator lens mounted to OpenGlass frame. |
-| **Option 2C** | Tactical Audio-Only OpenGlass | **$12.35** | Featherweight audio-first setup with throat mic and bone conduction (no visual screen). |
+| **Option 2C** | Tactical Audio-Only OpenGlass | **$23.75** | Featherweight audio-first setup with dual throat mic, finger PTT, USB ADC, and bone conduction. |
 
 ---
 
 ### Recommended Purchasing Cart
 
-If you want the full, high-end experience (upgraded OttoNinja + true high-resolution AR Display HUD):
+If you want the full, high-end experience (upgraded OttoNinja + true high-resolution AR Display HUD with throat-mic comms):
 
 1. **OttoNinja Head Upgrade (Option 1A):** **$26.49**
-2. **0.39" Micro-OLED AR Glasses Upgrade (Option 2A):** **$105.15**
-3. **Combined Total:** **~$131.64** *(Everything you need for an autonomous AI biped robot communicating with tactical AR glasses).*
+2. **0.39" Micro-OLED AR Glasses Upgrade (Option 2A):** **$116.55**
+3. **Combined Total:** **~$143.04** *(Everything you need for an autonomous AI biped robot communicating with tactical AR glasses).*
